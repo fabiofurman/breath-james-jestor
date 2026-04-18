@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#f4ead5" />
+<title>Breath — A lost art, rediscovered</title>
+
+<!-- PWA manifest -->
+<link rel="manifest" href="manifest.webmanifest" />
+
+<!-- iOS / Safari (não lê o manifest, precisa destas tags específicas) -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Breath" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
+<link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4ead5;
+  --bg-deep: #ebdfc5;
+  --ink: #1a1a1a;
+  --moss: #3a4a3f;
+  --terra: #c4633f;
+  --muted: #6b6453;
+  --rule: #c8ba9a;
+  --accent: #3a4a3f;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 400;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
+}
+body {
+  background-image:
+    radial-gradient(ellipse at top left, rgba(196, 99, 63, 0.06), transparent 50%),
+    radial-gradient(ellipse at bottom right, rgba(58, 74, 63, 0.08), transparent 50%);
+  padding: max(24px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(80px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+  position: relative;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  z-index: 1;
+}
+button { font-family: inherit; cursor: pointer; }
+#app { position: relative; z-index: 2; }
+
+/* ═══ Home ═══ */
+.masthead {
+  max-width: 960px; margin: 24px auto 32px;
+  text-align: center; padding: 12px 0 28px;
+  border-bottom: 1px solid var(--rule);
+}
+.masthead-top { margin-bottom: 10px; }
+.tag {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 13px;
+  letter-spacing: 0.15em; color: var(--terra);
+  text-transform: uppercase;
+}
+.title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 500; font-size: clamp(72px, 18vw, 148px);
+  line-height: 0.95; letter-spacing: -0.04em; color: var(--ink);
+}
+.subtitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 17px;
+  color: var(--muted); line-height: 1.6;
+  max-width: 460px; margin: 14px auto 22px;
+}
+.toggles {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  justify-content: center; margin-top: 18px;
+}
+.chip {
+  background: transparent; border: 1px solid var(--rule);
+  color: var(--muted); padding: 7px 14px;
+  border-radius: 999px; font-size: 12px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: all 200ms ease;
+}
+.chip:hover { border-color: var(--moss); color: var(--moss); }
+.chip-on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.chip-icon { font-size: 14px; }
+.cp-banner {
+  margin-top: 20px; padding: 10px 16px;
+  background: rgba(58, 74, 63, 0.08);
+  border-left: 2px solid var(--moss); display: inline-block;
+  font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 15px;
+}
+.cp-banner strong { font-style: normal; color: var(--moss); }
+.cp-note { color: var(--muted); font-size: 13px; }
+
+/* ═══ Grid ═══ */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2px; max-width: 1200px; margin: 0 auto;
+  background: var(--rule); border: 1px solid var(--rule);
+}
+.card {
+  background: var(--bg); border: none;
+  padding: 28px 24px 24px; text-align: left;
+  color: inherit; min-height: 260px;
+  display: flex; flex-direction: column;
+  transition: background 300ms ease;
+  opacity: 0; animation: fadeIn 600ms ease forwards;
+  font-family: inherit;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.card:hover { background: var(--bg-deep); }
+.card:hover .card-arrow { transform: translateX(4px); color: var(--accent); }
+.card-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 14px; color: var(--muted); letter-spacing: 0.2em;
+}
+.card-chapter {
+  font-family: 'Cormorant Garamond', serif; font-style: italic;
+  font-size: 12px; color: var(--terra); margin-top: 2px;
+  text-transform: uppercase; letter-spacing: 0.15em;
+}
+.card-name {
+  font-family: 'Cormorant Garamond', serif; font-weight: 500;
+  font-size: 26px; line-height: 1.15; margin-top: 14px;
+  color: var(--accent); letter-spacing: -0.01em;
+}
+.card-pt {
+  font-family: 'Cormorant Garamond', serif; font-style: italic;
+  font-size: 14px; color: var(--muted); margin-top: 2px;
+}
+.card-summary {
+  font-size: 13px; line-height: 1.55; color: var(--ink);
+  margin-top: 14px; flex: 1; opacity: 0.85;
+}
+.card-warn {
+  font-size: 11px; color: var(--terra); text-transform: uppercase;
+  letter-spacing: 0.1em; margin-top: 10px; font-weight: 500;
+}
+.card-arrow {
+  font-size: 20px; color: var(--muted); align-self: flex-end;
+  margin-top: 12px; transition: all 250ms ease;
+}
+
+/* ═══ Footer ═══ */
+.foot {
+  max-width: 640px; margin: 60px auto 0;
+  text-align: center; padding-top: 30px;
+  border-top: 1px solid var(--rule);
+}
+.foot-quote {
+  font-family: 'Cormorant Garamond', serif; font-style: italic;
+  font-size: 19px; line-height: 1.5; color: var(--ink);
+}
+.foot-attr {
+  font-size: 12px; color: var(--muted);
+  letter-spacing: 0.12em; text-transform: uppercase; margin-top: 10px;
+}
+
+/* ═══ Practice ═══ */
+.practice {
+  max-width: 720px; margin: 0 auto;
+  padding-top: 8px; min-height: calc(100vh - 104px);
+  display: flex; flex-direction: column;
+}
+.back-btn {
+  background: transparent; border: none; color: var(--muted);
+  font-family: 'Cormorant Garamond', serif; font-style: italic;
+  font-size: 15px; align-self: flex-start;
+  padding: 4px 8px 4px 0; margin-bottom: 6px;
+}
+.back-btn:hover { color: var(--accent); }
+.practice-header { text-align: center; margin: 10px 0 24px; }
+.practice-chapter {
+  font-family: 'Cormorant Garamond', serif; font-style: italic;
+  font-size: 13px; color: var(--terra);
+  letter-spacing: 0.12em; text-transform: uppercase;
+}
+.practice-title {
+  font-family: 'Cormorant Garamond', serif; font-weight: 500;
+  font-size: clamp(32px, 6vw, 44px); color: var(--accent);
+  margin: 6px 0 4px; letter-spacing: -0.01em; line-height: 1.1;
+}
+.practice-pt {
+  font-family: 'Cormorant Garamond', serif; font-style: italic;
+  font-size: 17px; color: var(--muted);
+}
+.quote-block {
+  margin: 16px 0 20px; padding: 18px 22px;
+  background: rgba(255,255,255,0.4);
+  border-left: 2px solid var(--accent);
+}
+.quote {
+  font-family: 'Cormorant Garamond', serif; font-style: italic;
+  font-size: 18px; line-height: 1.5; color: var(--ink);
+}
+.quote-src {
+  font-size: 11px; color: var(--muted);
+  letter-spacing: 0.12em; text-transform: uppercase; margin-top: 10px;
+}
+.tips {
+  font-size: 14px; line-height: 1.6; color: var(--ink);
+  opacity: 0.82; margin: 0 0 16px; padding: 0 4px;
+}
+.warning {
+  background: rgba(196, 99, 63, 0.1);
+  border: 1px solid rgba(196, 99, 63, 0.35);
+  padding: 14px 18px; font-size: 13px; line-height: 1.5;
+  color: #7a3a1f; margin-bottom: 20px;
+}
+.cp-input, .cycles-input {
+  margin: 14px 0; padding: 14px 18px;
+  background: rgba(255,255,255,0.4);
+  border: 1px solid var(--rule);
+}
+.cp-input label, .cycles-input label {
+  display: block; font-size: 12px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+}
+.cp-controls { display: flex; align-items: center; gap: 18px; }
+.cp-controls button {
+  width: 40px; height: 40px; border: 1px solid var(--rule);
+  background: var(--bg); font-size: 20px; color: var(--accent);
+  border-radius: 50%;
+}
+.cp-controls button:hover {
+  background: var(--accent); color: var(--bg); border-color: var(--accent);
+}
+.cp-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 32px; color: var(--accent); min-width: 60px;
+}
+.cp-hint { margin-top: 8px; font-size: 12px; color: var(--muted); font-style: italic; }
+.cp-hint strong { color: var(--accent); font-style: normal; }
+.link {
+  background: none; border: none; color: var(--terra);
+  text-decoration: underline; font-size: inherit;
+  font-family: inherit; padding: 0;
+}
+.start-btn {
+  background: var(--ink); color: var(--bg); border: none;
+  padding: 18px 36px; font-family: 'Cormorant Garamond', serif;
+  font-size: 22px; letter-spacing: 0.15em; text-transform: uppercase;
+  margin-top: 22px; align-self: center;
+  transition: all 250ms ease;
+}
+.start-btn:hover { background: var(--accent); letter-spacing: 0.25em; }
+
+/* ═══ Session ═══ */
+.session {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; min-height: 60vh;
+}
+.session-meta { margin-bottom: 20px; }
+.cycle-count {
+  font-family: 'Cormorant Garamond', serif; font-style: italic;
+  font-size: 15px; color: var(--muted); letter-spacing: 0.08em;
+}
+.breath-visual {
+  position: relative;
+  width: min(380px, 82vw); height: min(380px, 82vw);
+  display: flex; align-items: center; justify-content: center;
+  margin: 8px 0 24px;
+}
+.orbit {
+  position: absolute; width: 100%; height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%,
+    color-mix(in srgb, var(--accent) 60%, transparent),
+    color-mix(in srgb, var(--accent) 20%, transparent) 60%,
+    transparent 75%);
+  transition: transform 1000ms cubic-bezier(0.45, 0, 0.35, 1);
+  box-shadow:
+    0 0 80px color-mix(in srgb, var(--accent) 25%, transparent),
+    inset 0 0 60px color-mix(in srgb, var(--accent) 15%, transparent);
+  transform: scale(0.55);
+}
+.orbit-inner {
+  position: absolute; inset: 15%; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%,
+    color-mix(in srgb, var(--accent) 55%, #fff 20%),
+    color-mix(in srgb, var(--accent) 70%, transparent) 80%);
+  opacity: 0.7;
+}
+.orbit-ring {
+  position: absolute; inset: 3%; border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.breath-center {
+  position: relative; z-index: 5; text-align: center;
+  color: var(--bg); padding: 20px;
+}
+.phase-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(20px, 4vw, 26px); font-weight: 500;
+  line-height: 1.15; margin-bottom: 6px; color: var(--bg);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  max-width: 220px; margin-left: auto; margin-right: auto;
+}
+.phase-time {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 56px; font-weight: 500; color: var(--bg);
+  text-shadow: 0 2px 6px rgba(0,0,0,0.3); line-height: 1;
+}
+.hold-timer { font-size: 44px; font-variant-numeric: tabular-nums; }
+.stop-hold {
+  margin-top: 14px; background: rgba(255,255,255,0.95);
+  border: none; color: var(--accent); padding: 10px 20px;
+  font-family: 'Cormorant Garamond', serif; font-style: italic;
+  font-size: 15px; border-radius: 4px;
+}
+.nostril-indicator {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  font-size: 28px; color: var(--bg);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.side-left { left: -20px; }
+.side-right { right: -20px; }
+.session-controls { display: flex; gap: 12px; margin-top: 16px; }
+.ghost-btn {
+  background: transparent; border: 1px solid var(--rule);
+  color: var(--muted); padding: 10px 24px;
+  font-size: 12px; letter-spacing: 0.15em;
+  text-transform: uppercase; transition: all 200ms ease;
+}
+.ghost-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ═══ Done ═══ */
+.done-screen {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center;
+  min-height: 50vh; animation: fadeIn 800ms ease;
+}
+.done-mark { font-size: 64px; color: var(--accent); margin-bottom: 20px; }
+.done-title {
+  font-family: 'Cormorant Garamond', serif; font-weight: 500;
+  font-size: 38px; color: var(--ink); letter-spacing: -0.01em;
+}
+.cp-result {
+  margin-top: 28px; font-family: 'Cormorant Garamond', serif;
+  font-size: 22px; color: var(--muted);
+}
+.cp-result strong { font-size: 36px; color: var(--accent); margin-left: 8px; }
+.cp-interp {
+  font-size: 14px; font-style: italic;
+  max-width: 360px; line-height: 1.5; margin-top: 12px;
+}
+.done-actions {
+  margin-top: 30px; display: flex; gap: 12px;
+  flex-wrap: wrap; justify-content: center;
+}
+
+@media (max-width: 500px) {
+  body { padding: 16px 12px 60px; }
+  .masthead { margin-bottom: 24px; }
+  .grid { grid-template-columns: 1fr; }
+  .card { min-height: 220px; padding: 22px 20px; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   BREATH — vanilla JS, no build, no deps.
+   Baseado no apêndice de "Breath" de James Nestor.
+   ═══════════════════════════════════════════════════════════════════ */
+
+// ───────── Técnicas ─────────
+const TECHNIQUES = {
+  coherent: {
+    name: 'Resonant (Coherent) Breathing',
+    pt: 'Respiração Ressonante',
+    chapter: 'Chapter 5',
+    summary: 'The most essential technique. 5.5s in, 5.5s out. Puts heart, lungs and circulation in coherence.',
+    quote: '"There is no more essential technique, and none more basic."',
+    color: '#3a4a3f',
+    defaultCycles: 10,
+    buildPhases: () => [
+      { label: 'Inhale', pt: 'Inspire', type: 'in', duration: 5.5 },
+      { label: 'Exhale', pt: 'Expire', type: 'out', duration: 5.5 },
+    ],
+    tips: 'Sit straight, shoulders relaxed. Each breath should feel like a circle — no pause between in and out.',
+  },
+  box: {
+    name: 'Box Breathing',
+    pt: 'Respiração Quadrada',
+    chapter: 'Additional practices',
+    summary: 'Used by Navy SEALs. 4-4-4-4. Calm, focused, unshakeable.',
+    quote: '"Navy SEALs use this technique to stay calm and focused in tense situations."',
+    color: '#2a3a4a',
+    defaultCycles: 8,
+    buildPhases: () => [
+      { label: 'Inhale', pt: 'Inspire', type: 'in', duration: 4 },
+      { label: 'Hold', pt: 'Segure', type: 'hold', duration: 4 },
+      { label: 'Exhale', pt: 'Expire', type: 'out', duration: 4 },
+      { label: 'Hold', pt: 'Segure', type: 'hold', duration: 4 },
+    ],
+    tips: 'Inhale 4, hold 4, exhale 4, hold 4. Repeat.',
+  },
+  boxSleep: {
+    name: 'Box Breathing — Sleep Variant',
+    pt: 'Quadrada para o sono',
+    chapter: 'Additional practices',
+    summary: 'Longer exhalations trigger a deeper parasympathetic response. Best before sleep.',
+    quote: '"A variation to more deeply relax the body, especially effective before sleeping."',
+    color: '#1e2838',
+    defaultCycles: 8,
+    buildPhases: () => [
+      { label: 'Inhale', pt: 'Inspire', type: 'in', duration: 4 },
+      { label: 'Hold', pt: 'Segure', type: 'hold', duration: 4 },
+      { label: 'Exhale', pt: 'Expire', type: 'out', duration: 6 },
+      { label: 'Hold', pt: 'Segure', type: 'hold', duration: 2 },
+    ],
+    tips: 'The 6-second exhale and short 2-second hold deepen relaxation.',
+  },
+  fourSevenEight: {
+    name: '4-7-8 Breathing',
+    pt: 'Respiração 4-7-8',
+    chapter: 'Additional practices',
+    summary: "Dr. Andrew Weil's technique. Nestor uses it on long flights to fall asleep.",
+    quote: '"Places the body into a state of deep relaxation. I use it on long flights to help fall asleep."',
+    color: '#3a2e4a',
+    defaultCycles: 4,
+    buildPhases: () => [
+      { label: 'Inhale through nose', pt: 'Inspire (nariz)', type: 'in', duration: 4 },
+      { label: 'Hold', pt: 'Segure', type: 'hold', duration: 7 },
+      { label: 'Exhale — whoosh', pt: 'Expire (whoosh)', type: 'out', duration: 8 },
+    ],
+    tips: 'Exhale through the mouth with a whoosh sound. Close the mouth, inhale quietly through the nose.',
+  },
+  nadi: {
+    name: 'Alternate Nostril Breathing',
+    pt: 'Nadi Shodhana',
+    chapter: 'Chapter 3',
+    summary: 'Classic pranayama. Improves lung function, lowers blood pressure and sympathetic stress.',
+    quote: '"Effective before a meeting, an event, or sleep."',
+    color: '#4a3a2a',
+    defaultCycles: 8,
+    buildPhases: () => [
+      { label: 'Inhale — LEFT nostril', pt: 'Inspire (narina ESQUERDA)', type: 'in', duration: 4, side: 'left' },
+      { label: 'Hold', pt: 'Segure', type: 'hold', duration: 2 },
+      { label: 'Exhale — RIGHT nostril', pt: 'Expire (narina DIREITA)', type: 'out', duration: 4, side: 'right' },
+      { label: 'Inhale — RIGHT nostril', pt: 'Inspire (narina DIREITA)', type: 'in', duration: 4, side: 'right' },
+      { label: 'Hold', pt: 'Segure', type: 'hold', duration: 2 },
+      { label: 'Exhale — LEFT nostril', pt: 'Expire (narina ESQUERDA)', type: 'out', duration: 4, side: 'left' },
+    ],
+    tips: 'Right thumb on right nostril, ring finger on left. Forefinger and middle finger rest between eyebrows.',
+  },
+  coordination: {
+    name: 'Breathing Coordination',
+    pt: 'Coordenação Respiratória',
+    chapter: 'Chapter 4',
+    summary: "Carl Stough's method. Engages the diaphragm deeply. Each exhale counts out loud 1–10, trailing into a whisper.",
+    quote: '"Each breath should feel soft and enriching."',
+    color: '#3a3a2a',
+    defaultCycles: 12,
+    buildPhases: () => [
+      { label: 'Inhale softly', pt: 'Inspire suave', type: 'in', duration: 3 },
+      { label: 'Exhale — count 1 to 10, then whisper', pt: 'Expire contando 1 a 10, depois sussurre', type: 'out', duration: 15 },
+    ],
+    tips: 'Sit straight, chin perpendicular to body. As you reach the end of the exhale, keep counting in a whisper, then only lip-moving.',
+  },
+  controlPause: {
+    name: 'Buteyko — Control Pause',
+    pt: 'Pausa Controlada',
+    chapter: 'Chapter 6',
+    summary: 'Diagnostic. Measures your general respiratory health. Count how long until the first potent desire to breathe.',
+    quote: '"A diagnostic tool to gauge general respiratory health and breathing progress."',
+    color: '#4a3a3a',
+    buildPhases: () => [
+      { label: 'Sit up. Breathe normally for a moment.', pt: 'Sente-se. Respire normalmente.', type: 'prep', duration: 10 },
+      { label: 'Exhale softly — then pinch nose and hold', pt: 'Expire e prenda o nariz', type: 'hold-open', duration: 300 },
+    ],
+    tips: "The first breath in after the pause must be calm — if it's laboured, the hold was too long. Never do this while driving or underwater.",
+  },
+  miniHold: {
+    name: 'Buteyko — Mini Breathhold',
+    pt: 'Mini Retenção',
+    chapter: 'Chapter 6',
+    summary: 'Breathe less, all the time. Exhale and hold for half your Control Pause. Repeat throughout the day.',
+    quote: '"Thousands of Buteyko practitioners swear by it to stave off asthma and anxiety attacks."',
+    color: '#5a3a2a',
+    defaultCycles: 10,
+    needsControlPause: true,
+    buildPhases: (opts) => {
+      const holdDuration = Math.max(3, Math.floor((opts && opts.controlPause || 20) / 2));
+      return [
+        { label: 'Exhale gently', pt: 'Expire suavemente', type: 'out', duration: 3 },
+        { label: 'Hold', pt: 'Segure', type: 'hold', duration: holdDuration },
+        { label: 'Breathe normally', pt: 'Respire normalmente', type: 'rest', duration: 10 },
+      ];
+    },
+    tips: 'Enter your Control Pause result below. The hold will be exactly half of it.',
+  },
+  humming: {
+    name: 'Nose Humming',
+    pt: 'Zumbido Nasal',
+    chapter: 'Chapter 6',
+    summary: 'Humming multiplies nitric oxide release in the nasal passages 15-fold. Widens capillaries, relaxes smooth muscles.',
+    quote: '"It may sound ridiculous, and feel ridiculous — but the effects can be potent."',
+    color: '#4a4a2a',
+    buildPhases: () => [
+      { label: 'Hum any song through the nose', pt: 'Zumbra qualquer canção pelo nariz', type: 'hum', duration: 300 },
+    ],
+    tips: 'Breathe normally through the nose. Hum any melody for at least 5 minutes.',
+  },
+  decongest: {
+    name: 'Decongest the Nose',
+    pt: 'Descongestionar o Nariz',
+    chapter: 'Chapter 6',
+    summary: 'Clears blocked nasal passages through controlled air hunger and movement.',
+    quote: '"Shake your head, go for a quick walk, or jump and run while holding."',
+    color: '#2a4a4a',
+    defaultCycles: 6,
+    buildPhases: () => [
+      { label: 'Exhale — pinch nose', pt: 'Expire e prenda o nariz', type: 'out', duration: 3 },
+      { label: 'Hold — move, walk, shake head', pt: 'Segure — mexa-se, ande, balance a cabeça', type: 'hold-move', duration: 25 },
+      { label: 'Slow breath in through nose', pt: 'Inspire muito devagar pelo nariz', type: 'in', duration: 8 },
+      { label: 'Calm controlled breathing', pt: 'Respiração calma e controlada', type: 'rest', duration: 40 },
+    ],
+    tips: 'If nose is still blocked, breathe softly through pursed lips. Repeat 6 times.',
+  },
+  yogic: {
+    name: 'Yogic Three-Part Breath',
+    pt: 'Respiração Yogue em Três Partes',
+    chapter: 'Additional practices',
+    summary: 'Fills belly, ribs, chest in sequence. A staple for any pranayama practitioner.',
+    quote: '"A standard technique for any aspiring pranayama student."',
+    color: '#3a4a2a',
+    defaultCycles: 12,
+    buildPhases: () => [
+      { label: 'Inhale — belly, ribs, chest', pt: 'Inspire — barriga, costelas, peito', type: 'in', duration: 6 },
+      { label: 'Exhale — chest, ribs, belly', pt: 'Expire — peito, costelas, barriga', type: 'out', duration: 6 },
+    ],
+    tips: 'One continuous motion: belly first, then ribs, then chest on the way in. Reverse on the way out.',
+  },
+  tummo: {
+    name: 'Tummo (Wim Hof-style)',
+    pt: 'Tummo — Fogo Interior',
+    chapter: 'Chapter 8',
+    summary: '30 deep fast breaths → full exhale → hold as long as possible → one deep inhale, hold 15s. Repeat 3 rounds.',
+    quote: '"Never practise near water, while driving or walking. Consult your doctor if pregnant or with heart condition."',
+    color: '#5a2a2a',
+    warning: true,
+    defaultCycles: 3,
+    buildPhases: () => [
+      { label: '30 deep fast breaths', pt: '30 respirações profundas e rápidas', type: 'fast', duration: 60, breathCount: 30 },
+      { label: 'Exhale to natural conclusion — HOLD', pt: 'Expire ao natural — SEGURE', type: 'hold-max', duration: 180 },
+      { label: 'One huge inhale — hold 15s', pt: 'Uma inspiração grande — segure 15s', type: 'hold-in', duration: 15 },
+    ],
+    tips: 'Lie flat on your back with a pillow. Never do this near water or while driving.',
+  },
+};
+const TECH_ORDER = [
+  'coherent', 'box', 'boxSleep', 'fourSevenEight',
+  'nadi', 'coordination', 'yogic', 'humming',
+  'controlPause', 'miniHold', 'decongest', 'tummo',
+];
+
+// ───────── Audio engine ─────────
+const Audio = {
+  ctx: null, droneNodes: null, droneOn: false,
+  masterBell: 0.35, masterDrone: 0.08,
+  voiceEnabled: true, bellEnabled: true,
+  init() {
+    if (this.ctx) return;
+    try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+  },
+  bell(freq = 880, dur = 1.6) {
+    if (!this.bellEnabled) return;
+    this.init();
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    const osc2 = this.ctx.createOscillator();
+    const gain2 = this.ctx.createGain();
+    osc.type = 'sine'; osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(this.masterBell, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+    osc2.type = 'sine'; osc2.frequency.value = freq * 2.01;
+    gain2.gain.setValueAtTime(0, now);
+    gain2.gain.linearRampToValueAtTime(this.masterBell * 0.35, now + 0.01);
+    gain2.gain.exponentialRampToValueAtTime(0.0001, now + dur * 0.7);
+    osc.connect(gain).connect(this.ctx.destination);
+    osc2.connect(gain2).connect(this.ctx.destination);
+    osc.start(now); osc.stop(now + dur);
+    osc2.start(now); osc2.stop(now + dur * 0.7);
+  },
+  lowBell() { this.bell(523.25, 2.0); },
+  highBell() { this.bell(987.77, 1.2); },
+  droneStart() {
+    this.init();
+    if (!this.ctx || this.droneOn) return;
+    const ctx = this.ctx; const now = ctx.currentTime;
+    const master = ctx.createGain();
+    master.gain.value = 0;
+    master.gain.linearRampToValueAtTime(this.masterDrone, now + 4);
+    master.connect(ctx.destination);
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 1200; lp.Q.value = 0.4;
+    lp.connect(master);
+    const voices = [];
+    [98, 146.83, 196].forEach((f, i) => {
+      const o = ctx.createOscillator();
+      o.type = i === 2 ? 'triangle' : 'sine';
+      o.frequency.value = f;
+      const g = ctx.createGain();
+      g.gain.value = i === 0 ? 1 : (i === 1 ? 0.5 : 0.25);
+      const lfo = ctx.createOscillator();
+      lfo.frequency.value = 0.05 + i * 0.03;
+      const lfoGain = ctx.createGain(); lfoGain.gain.value = 0.15;
+      lfo.connect(lfoGain).connect(g.gain);
+      o.connect(g).connect(lp);
+      o.start(now); lfo.start(now);
+      voices.push({ o, lfo });
+    });
+    this.droneNodes = { master, voices, lp };
+    this.droneOn = true;
+  },
+  droneStop() {
+    if (!this.ctx || !this.droneOn || !this.droneNodes) return;
+    const now = this.ctx.currentTime;
+    this.droneNodes.master.gain.cancelScheduledValues(now);
+    this.droneNodes.master.gain.setValueAtTime(this.droneNodes.master.gain.value, now);
+    this.droneNodes.master.gain.linearRampToValueAtTime(0, now + 2);
+    const nodes = this.droneNodes;
+    setTimeout(() => {
+      nodes.voices.forEach(v => { try { v.o.stop(); v.lfo.stop(); } catch(e) {} });
+    }, 2200);
+    this.droneNodes = null; this.droneOn = false;
+  },
+  setDrone(on) { if (on) this.droneStart(); else this.droneStop(); },
+  speak(text, lang = 'en-GB') {
+    if (!this.voiceEnabled || !window.speechSynthesis) return;
+    try {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang; u.rate = 0.9; u.pitch = 1.0; u.volume = 0.9;
+      window.speechSynthesis.speak(u);
+    } catch(e) {}
+  },
+  stopAll() {
+    this.droneStop();
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+  },
+};
+
+// ───────── State ─────────
+const state = {
+  screen: 'home',
+  activeKey: null,
+  settings: {
+    cycles: null,
+    controlPause: 20,
+    voice: true,
+    bell: true,
+    drone: false,
+    lang: 'en',
+  },
+  savedCP: null,
+  // runtime session state
+  running: false,
+  done: false,
+  phaseIdx: 0,
+  cycle: 0,
+  elapsed: 0,
+  phases: [],
+  fastBreathCount: 0,
+  tickInterval: null,
+  phaseStart: 0,
+};
+
+// Persistence via localStorage (Vercel/GitHub Pages friendly)
+function loadPrefs() {
+  try {
+    const raw = localStorage.getItem('breath-prefs');
+    if (raw) {
+      const p = JSON.parse(raw);
+      if (typeof p.voice === 'boolean') state.settings.voice = p.voice;
+      if (typeof p.bell === 'boolean') state.settings.bell = p.bell;
+      if (typeof p.drone === 'boolean') state.settings.drone = p.drone;
+      if (typeof p.lang === 'string') state.settings.lang = p.lang;
+      if (typeof p.controlPause === 'number') state.settings.controlPause = p.controlPause;
+      if (typeof p.savedCP === 'number') state.savedCP = p.savedCP;
+    }
+  } catch(e) {}
+}
+function savePrefs() {
+  try {
+    localStorage.setItem('breath-prefs', JSON.stringify({
+      voice: state.settings.voice,
+      bell: state.settings.bell,
+      drone: state.settings.drone,
+      lang: state.settings.lang,
+      controlPause: state.settings.controlPause,
+      savedCP: state.savedCP,
+    }));
+  } catch(e) {}
+}
+
+// ───────── Helpers ─────────
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+function el(tag, attrs = {}, ...children) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') e.className = v;
+    else if (k === 'style') e.style.cssText = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (k === 'html') e.innerHTML = v;
+    else e.setAttribute(k, v);
+  }
+  for (const c of children.flat()) {
+    if (c == null || c === false) continue;
+    e.append(c.nodeType ? c : document.createTextNode(String(c)));
+  }
+  return e;
+}
+function fmtTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return m + ':' + String(sec).padStart(2, '0');
+}
+
+// ───────── Rendering ─────────
+function render() {
+  const root = $('#app');
+  root.innerHTML = '';
+  if (state.screen === 'home') renderHome(root);
+  else if (state.screen === 'practice') renderPractice(root);
+}
+
+function renderHome(root) {
+  const home = el('div', { class: 'home' });
+
+  // masthead
+  const mh = el('header', { class: 'masthead' },
+    el('div', { class: 'masthead-top' },
+      el('span', { class: 'tag' }, '— A lost art, rediscovered —')
+    ),
+    el('h1', { class: 'title' }, 'Breath'),
+    el('p', { class: 'subtitle', html:
+      "Twelve breathing methods from the appendix of James Nestor's book.<br>Choose one. Sit straight. Soften the shoulders." })
+  );
+
+  // toggles
+  const toggles = el('div', { class: 'toggles' });
+  const addChip = (label, icon, key) => {
+    const chip = el('button', {
+      class: 'chip' + (state.settings[key] === true || (key === 'lang' && state.settings.lang === 'pt') ? ' chip-on' : ''),
+      onclick: () => {
+        if (key === 'lang') state.settings.lang = state.settings.lang === 'pt' ? 'en' : 'pt';
+        else state.settings[key] = !state.settings[key];
+        if (key === 'drone') Audio.setDrone(state.settings.drone);
+        if (key === 'voice') Audio.voiceEnabled = state.settings.voice;
+        if (key === 'bell') Audio.bellEnabled = state.settings.bell;
+        savePrefs();
+        render();
+      }
+    }, el('span', { class: 'chip-icon' }, icon), el('span', {}, label));
+    toggles.appendChild(chip);
+  };
+  addChip('Bell', '◉', 'bell');
+  addChip('Voice cues', '❝', 'voice');
+  addChip('Zen drone', '∿', 'drone');
+  addChip(state.settings.lang === 'pt' ? 'PT-BR' : 'English', '⌘', 'lang');
+  mh.appendChild(toggles);
+
+  if (state.savedCP != null) {
+    const banner = el('div', { class: 'cp-banner' });
+    banner.innerHTML = 'Your last Control Pause: <strong>' + state.savedCP + 's</strong>';
+    if (state.savedCP < 20) banner.innerHTML += '<span class="cp-note"> · below 20s suggests overbreathing</span>';
+    else if (state.savedCP >= 40) banner.innerHTML += '<span class="cp-note"> · excellent</span>';
+    mh.appendChild(banner);
+  }
+
+  home.appendChild(mh);
+
+  // grid
+  const grid = el('main', { class: 'grid' });
+  TECH_ORDER.forEach((key, i) => {
+    const t = TECHNIQUES[key];
+    const card = el('button', {
+      class: 'card',
+      style: '--accent: ' + t.color + '; animation-delay: ' + (i * 60) + 'ms;',
+      onclick: () => openTechnique(key),
+    },
+      el('div', { class: 'card-num' }, String(i + 1).padStart(2, '0')),
+      el('div', { class: 'card-chapter' }, t.chapter),
+      el('div', { class: 'card-name' }, t.name),
+      el('div', { class: 'card-pt' }, t.pt),
+      el('div', { class: 'card-summary' }, t.summary),
+      t.warning ? el('div', { class: 'card-warn' }, '⚠ caution required') : null,
+      el('div', { class: 'card-arrow' }, '→')
+    );
+    grid.appendChild(card);
+  });
+  home.appendChild(grid);
+
+  home.appendChild(el('footer', { class: 'foot' },
+    el('div', { class: 'foot-quote' },
+      '"The perfect breath is this: breathe in for about 5.5 seconds, then exhale for 5.5 seconds. That\'s 5.5 breaths a minute for a total of about 5.5 litres of air."'),
+    el('div', { class: 'foot-attr', html: '— James Nestor, <em>Breath</em>' })
+  ));
+
+  root.appendChild(home);
+}
+
+function openTechnique(key) {
+  state.activeKey = key;
+  const t = TECHNIQUES[key];
+  state.settings.cycles = t.defaultCycles || null;
+  state.running = false;
+  state.done = false;
+  state.phaseIdx = 0;
+  state.cycle = 0;
+  state.elapsed = 0;
+  state.phases = t.buildPhases({ controlPause: state.settings.controlPause });
+  state.screen = 'practice';
+  render();
+}
+
+function backToHome() {
+  stopSession();
+  Audio.stopAll();
+  state.screen = 'home';
+  state.activeKey = null;
+  render();
+}
+
+function renderPractice(root) {
+  const tech = TECHNIQUES[state.activeKey];
+  const p = el('div', { class: 'practice', style: '--accent: ' + tech.color });
+
+  p.appendChild(el('button', { class: 'back-btn', onclick: backToHome }, '← back'));
+  p.appendChild(el('div', { class: 'practice-header' },
+    el('div', { class: 'practice-chapter' }, tech.chapter),
+    el('h2', { class: 'practice-title' }, tech.name),
+    el('div', { class: 'practice-pt' }, tech.pt)
+  ));
+
+  if (!state.running && !state.done) p.appendChild(renderPreStart(tech));
+  else if (state.running) p.appendChild(renderSession(tech));
+  else if (state.done) p.appendChild(renderDone(tech));
+
+  root.appendChild(p);
+}
+
+function renderPreStart(tech) {
+  const wrap = el('div', {});
+  wrap.appendChild(el('div', { class: 'quote-block' },
+    el('div', { class: 'quote' }, tech.quote),
+    el('div', { class: 'quote-src' }, '— James Nestor, Breath')
+  ));
+  wrap.appendChild(el('div', { class: 'tips' }, tech.tips));
+
+  if (tech.warning) {
+    wrap.appendChild(el('div', { class: 'warning' },
+      '⚠ Never practise near water, while driving or walking, or where you could be hurt if you pass out. ' +
+      'Consult your doctor if pregnant or with a heart condition.'));
+  }
+
+  if (tech.needsControlPause) {
+    const cpBox = el('div', { class: 'cp-input' });
+    cpBox.appendChild(el('label', {}, 'Your Control Pause (seconds):'));
+    const ctrls = el('div', { class: 'cp-controls' });
+    ctrls.appendChild(el('button', { onclick: () => {
+      state.settings.controlPause = Math.max(5, state.settings.controlPause - 5);
+      state.phases = tech.buildPhases({ controlPause: state.settings.controlPause });
+      savePrefs(); render();
+    }}, '−'));
+    ctrls.appendChild(el('span', { class: 'cp-value' }, state.settings.controlPause + 's'));
+    ctrls.appendChild(el('button', { onclick: () => {
+      state.settings.controlPause = state.settings.controlPause + 5;
+      state.phases = tech.buildPhases({ controlPause: state.settings.controlPause });
+      savePrefs(); render();
+    }}, '+'));
+    cpBox.appendChild(ctrls);
+    const hint = el('div', { class: 'cp-hint' });
+    hint.innerHTML = 'Mini Breathhold will be <strong>' + Math.max(3, Math.floor(state.settings.controlPause / 2)) + 's</strong>.';
+    if (state.savedCP != null && state.savedCP !== state.settings.controlPause) {
+      const useSavedBtn = el('button', {
+        class: 'link',
+        onclick: () => {
+          state.settings.controlPause = state.savedCP;
+          state.phases = tech.buildPhases({ controlPause: state.settings.controlPause });
+          savePrefs(); render();
+        }
+      }, state.savedCP + 's');
+      hint.appendChild(document.createTextNode(' Use saved: '));
+      hint.appendChild(useSavedBtn);
+    }
+    cpBox.appendChild(hint);
+    wrap.appendChild(cpBox);
+  }
+
+  if (tech.defaultCycles) {
+    const cBox = el('div', { class: 'cycles-input' });
+    cBox.appendChild(el('label', {}, state.activeKey === 'tummo' ? 'Rounds:' : 'Cycles:'));
+    const ctrls = el('div', { class: 'cp-controls' });
+    ctrls.appendChild(el('button', { onclick: () => {
+      state.settings.cycles = Math.max(1, (state.settings.cycles || tech.defaultCycles) - 1);
+      render();
+    }}, '−'));
+    ctrls.appendChild(el('span', { class: 'cp-value' }, state.settings.cycles || tech.defaultCycles));
+    ctrls.appendChild(el('button', { onclick: () => {
+      state.settings.cycles = (state.settings.cycles || tech.defaultCycles) + 1;
+      render();
+    }}, '+'));
+    cBox.appendChild(ctrls);
+    wrap.appendChild(cBox);
+  }
+
+  wrap.appendChild(el('button', { class: 'start-btn', onclick: startSession }, 'Begin'));
+  return wrap;
+}
+
+function renderSession(tech) {
+  const wrap = el('div', { class: 'session' });
+  const phase = state.phases[state.phaseIdx];
+  const cycles = state.settings.cycles || tech.defaultCycles || 1;
+
+  if (tech.defaultCycles) {
+    wrap.appendChild(el('div', { class: 'session-meta' },
+      el('div', { class: 'cycle-count' },
+        (state.activeKey === 'tummo' ? 'Round ' : 'Cycle ') + (state.cycle + 1) + ' / ' + cycles)
+    ));
+  }
+
+  // Circle
+  const vis = el('div', { class: 'breath-visual' });
+  const orbit = el('div', { class: 'orbit', id: 'orbit' });
+  orbit.appendChild(el('div', { class: 'orbit-inner' }));
+  orbit.appendChild(el('div', { class: 'orbit-ring' }));
+  vis.appendChild(orbit);
+
+  const center = el('div', { class: 'breath-center' });
+  const label = settingsLang() === 'pt' ? phase.pt : phase.label;
+  center.appendChild(el('div', { class: 'phase-label' }, label));
+
+  const userControlled = phase.type === 'hold-open' || phase.type === 'hold-max';
+  const timeEl = el('div', { class: 'phase-time' + (userControlled ? ' hold-timer' : ''), id: 'time-display' });
+  if (phase.type === 'fast') timeEl.textContent = '0 / ' + phase.breathCount;
+  else if (userControlled) timeEl.textContent = '0:00';
+  else timeEl.textContent = Math.ceil(phase.duration);
+  center.appendChild(timeEl);
+
+  if (userControlled) {
+    const stopBtn = el('button', { class: 'stop-hold', onclick: userEndHold },
+      state.activeKey === 'controlPause'
+        ? (settingsLang() === 'pt' ? 'Primeira vontade' : 'First urge to breathe')
+        : (settingsLang() === 'pt' ? 'Terminar retenção' : 'End hold'));
+    center.appendChild(stopBtn);
+  } else if (phase.type === 'prep') {
+    const readyBtn = el('button', { class: 'stop-hold', onclick: advancePhase },
+      settingsLang() === 'pt' ? 'Estou pronto' : "I'm ready");
+    center.appendChild(readyBtn);
+  }
+
+  if (phase.side) {
+    center.appendChild(el('div', {
+      class: 'nostril-indicator side-' + phase.side
+    }, phase.side === 'left' ? '◀' : '▶'));
+  }
+
+  vis.appendChild(center);
+  wrap.appendChild(vis);
+
+  wrap.appendChild(el('div', { class: 'session-controls' },
+    el('button', { class: 'ghost-btn', onclick: stopSession }, 'Stop')
+  ));
+
+  // Kick off display updates once attached.
+  queueMicrotask(applyPhaseVisual);
+  return wrap;
+}
+
+function renderDone(tech) {
+  const wrap = el('div', { class: 'done-screen' });
+  wrap.appendChild(el('div', { class: 'done-mark' }, '◉'));
+  wrap.appendChild(el('div', { class: 'done-title' },
+    settingsLang() === 'pt' ? 'Prática completa.' : 'Practice complete.'));
+
+  if (state.activeKey === 'controlPause' && state.savedCP != null) {
+    const cp = el('div', { class: 'cp-result' });
+    cp.innerHTML = 'Control Pause: <strong>' + state.savedCP + 's</strong>';
+    const interp = el('div', { class: 'cp-interp' });
+    const cpVal = state.savedCP;
+    const pt = settingsLang() === 'pt';
+    if (cpVal < 20) interp.textContent = pt
+      ? 'Abaixo de 20s — possível hiperventilação crônica. Pratique Mini Retenções e Ressonante diariamente.'
+      : 'Below 20s — you may be overbreathing. Practise Mini Breathholds and Coherent Breathing.';
+    else if (cpVal < 30) interp.textContent = pt
+      ? 'Aceitável. A prática regular vai estender este número.'
+      : 'Acceptable. Regular practice will extend this.';
+    else if (cpVal < 40) interp.textContent = pt
+      ? 'Bom. Sua respiração é bem controlada.'
+      : 'Good. Your breathing is well-controlled.';
+    else interp.textContent = pt
+      ? 'Excelente. Sinal de saúde respiratória robusta.'
+      : 'Excellent. A sign of robust respiratory health.';
+    cp.appendChild(interp);
+    wrap.appendChild(cp);
+  }
+
+  wrap.appendChild(el('div', { class: 'done-actions' },
+    el('button', { class: 'start-btn', onclick: () => { state.done = false; startSession(); } },
+      settingsLang() === 'pt' ? 'Praticar de novo' : 'Practise again'),
+    el('button', { class: 'ghost-btn', onclick: backToHome },
+      settingsLang() === 'pt' ? 'Voltar' : 'Back to list')
+  ));
+  return wrap;
+}
+
+function settingsLang() { return state.settings.lang; }
+
+// ───────── Session logic ─────────
+function startSession() {
+  Audio.init();
+  const tech = TECHNIQUES[state.activeKey];
+  state.phases = tech.buildPhases({ controlPause: state.settings.controlPause });
+  state.running = true;
+  state.done = false;
+  state.phaseIdx = 0;
+  state.cycle = 0;
+  state.elapsed = 0;
+  state.fastBreathCount = 0;
+  state.phaseStart = performance.now();
+  render();
+  announcePhase();
+  if (state.tickInterval) clearInterval(state.tickInterval);
+  state.tickInterval = setInterval(tick, 100);
+}
+
+function stopSession() {
+  state.running = false;
+  if (state.tickInterval) { clearInterval(state.tickInterval); state.tickInterval = null; }
+  Audio.stopAll();
+  if (state.settings.drone) setTimeout(() => Audio.setDrone(true), 2300);
+}
+
+function finishSession() {
+  state.running = false;
+  state.done = true;
+  if (state.tickInterval) { clearInterval(state.tickInterval); state.tickInterval = null; }
+  Audio.bell(1046.5, 2.5);
+  setTimeout(() => Audio.bell(783.99, 2.5), 400);
+  const msg = settingsLang() === 'pt' ? 'Prática completa. Bem feito.' : 'Practice complete. Well done.';
+  const lang = settingsLang() === 'pt' ? 'pt-BR' : 'en-GB';
+  setTimeout(() => Audio.speak(msg, lang), 800);
+  render();
+}
+
+function announcePhase() {
+  const phase = state.phases[state.phaseIdx];
+  if (!phase) return;
+  const lang = settingsLang() === 'pt' ? 'pt-BR' : 'en-GB';
+  const text = settingsLang() === 'pt' ? phase.pt : phase.label;
+  Audio.speak(text, lang);
+  if (phase.type === 'in') Audio.highBell();
+  else if (phase.type === 'out') Audio.bell(659.25, 1.4);
+  else if (phase.type === 'hold' || phase.type === 'hold-open' || phase.type === 'hold-in' || phase.type === 'hold-max') Audio.lowBell();
+  else Audio.bell(740, 1.4);
+}
+
+function advancePhase() {
+  const tech = TECHNIQUES[state.activeKey];
+  const cycles = state.settings.cycles || tech.defaultCycles || 1;
+  if (state.phaseIdx < state.phases.length - 1) {
+    state.phaseIdx++;
+    state.elapsed = 0;
+    state.phaseStart = performance.now();
+    state.fastBreathCount = 0;
+    render();
+    announcePhase();
+  } else {
+    if (state.cycle + 1 < cycles) {
+      state.cycle++;
+      state.phaseIdx = 0;
+      state.elapsed = 0;
+      state.phaseStart = performance.now();
+      state.fastBreathCount = 0;
+      render();
+      announcePhase();
+    } else {
+      finishSession();
+    }
+  }
+}
+
+function userEndHold() {
+  const phase = state.phases[state.phaseIdx];
+  const held = Math.floor(state.elapsed);
+  if (state.activeKey === 'controlPause') {
+    state.savedCP = held;
+    state.settings.controlPause = held;
+    savePrefs();
+    finishSession();
+  } else {
+    advancePhase();
+  }
+}
+
+function tick() {
+  if (!state.running) return;
+  const phase = state.phases[state.phaseIdx];
+  if (!phase) return;
+  const now = performance.now();
+  state.elapsed = (now - state.phaseStart) / 1000;
+  const userControlled = phase.type === 'hold-open' || phase.type === 'hold-max';
+
+  // Update just the time display + circle — no full re-render (smoother)
+  const timeEl = document.getElementById('time-display');
+  if (timeEl) {
+    if (phase.type === 'fast') {
+      const breathInterval = phase.duration / (phase.breathCount || 30);
+      state.fastBreathCount = Math.min(phase.breathCount || 30, Math.floor(state.elapsed / breathInterval) + 1);
+      timeEl.textContent = state.fastBreathCount + ' / ' + phase.breathCount;
+    } else if (userControlled) {
+      timeEl.textContent = fmtTime(state.elapsed);
+    } else {
+      timeEl.textContent = Math.max(0, Math.ceil(phase.duration - state.elapsed));
+    }
+  }
+  applyPhaseVisual();
+
+  if (!userControlled && state.elapsed >= phase.duration) {
+    advancePhase();
+  }
+}
+
+function applyPhaseVisual() {
+  const orbit = document.getElementById('orbit');
+  if (!orbit) return;
+  const phase = state.phases[state.phaseIdx];
+  if (!phase) return;
+  const progress = Math.min(1, state.elapsed / phase.duration);
+  let scale = 0.55;
+  if (phase.type === 'in') scale = 0.55 + progress * 0.45;
+  else if (phase.type === 'out') scale = 1.0 - progress * 0.45;
+  else if (phase.type === 'hold' || phase.type === 'hold-in') scale = 1.0;
+  else if (phase.type === 'hold-open' || phase.type === 'hold-max') scale = 0.55;
+  else if (phase.type === 'fast') scale = 0.6 + 0.35 * (0.5 + 0.5 * Math.sin(state.elapsed * Math.PI * 2));
+  else if (phase.type === 'rest' || phase.type === 'prep') scale = 0.7 + 0.15 * Math.sin(state.elapsed * 0.5);
+  else scale = 0.8;
+  orbit.style.transform = 'scale(' + scale.toFixed(3) + ')';
+}
+
+// ───────── Boot ─────────
+loadPrefs();
+Audio.voiceEnabled = state.settings.voice;
+Audio.bellEnabled = state.settings.bell;
+render();
+
+// Unlock audio on first user gesture (mobile browsers require this)
+document.addEventListener('click', () => {
+  Audio.init();
+  if (Audio.ctx && Audio.ctx.state === 'suspended') Audio.ctx.resume();
+  if (state.settings.drone && !Audio.droneOn) Audio.droneStart();
+}, { once: true });
+
+// Register service worker (required for PWA installability)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(() => console.log('SW registered'))
+      .catch((err) => console.warn('SW registration failed:', err));
+  });
+}
+</script>
+</body>
+</html>
